@@ -1,4 +1,4 @@
-package flashCards;
+package org.flashCards;
 
 // Importujemy potrzebne klasy z bibliotek Swing (GUI) i Java (IO, kolekcje)
 import javax.swing.*;
@@ -19,6 +19,7 @@ public class FlashCardBuilderPanel extends JPanel {
 
     // Pole tekstowe na odpowiedź
     private JTextArea answer;
+    private JTextArea note;
 
     // Lista przechowująca utworzone fiszki
     private ArrayList<FlashCard> flashCardList;
@@ -46,8 +47,10 @@ public class FlashCardBuilderPanel extends JPanel {
 
         // Dodanie scrolla do pytania (tylko pionowy)
         JScrollPane qScrollPane = new JScrollPane(question);
-        qScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        qScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        qScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants
+                .VERTICAL_SCROLLBAR_ALWAYS);
+        qScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants
+                .HORIZONTAL_SCROLLBAR_NEVER);
 
         // Tworzenie pola tekstowego na odpowiedź
         answer = new JTextArea(6, 20);
@@ -55,16 +58,30 @@ public class FlashCardBuilderPanel extends JPanel {
         answer.setWrapStyleWord(true); // zawijanie słów
         answer.setFont(greatFont);
 
+
         // Scroll do pola odpowiedzi
         JScrollPane aScrollPane = new JScrollPane(answer);
         aScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         aScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
+
+
+
+        // Tworzenie pola tekstowego na notatke
+        note = new JTextArea(4, 20);
+        note.setLineWrap(true);
+        note.setWrapStyleWord(true); // zawijanie słów
+        note.setFont(greatFont);
+        //scorll do notatki
+        JScrollPane nScrollPane = new JScrollPane(note);
+        nScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        nScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         // Przycisk dodający fiszkę do listy
         JButton nextButton = new JButton("Dodaj fiszkę");
         nextButton.addActionListener(e -> {
+
             // Tworzenie nowej fiszki na podstawie pól tekstowych
-            FlashCard card = new FlashCard(question.getText(), answer.getText());
+            FlashCard card = new FlashCard(question.getText(), answer.getText(), note.getText());
             flashCardList.add(card); // dodajemy do listy
             clearFields(); // czyścimy pola
         });
@@ -74,10 +91,17 @@ public class FlashCardBuilderPanel extends JPanel {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
         // Dodajemy komponenty do wewnętrznego panelu
+        //pytanie
         mainPanel.add(new JLabel("Pytanie"));
         mainPanel.add(qScrollPane);
+        //odpowiedz
         mainPanel.add(new JLabel("Odpowiedź"));
         mainPanel.add(aScrollPane);
+
+        //nota
+        mainPanel.add(new JLabel("Notatka"));
+        mainPanel.add(nScrollPane);
+
         mainPanel.add(nextButton);
 
         // Umieszczamy główny panel wewnątrz (CENTER) panelu FlashCardBuilderPanel
@@ -113,7 +137,9 @@ public class FlashCardBuilderPanel extends JPanel {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             for (FlashCard card : flashCardList) {
                 writer.write(card.getQuestion() + "/");
-                writer.write(card.getAnswer() + "\n");
+                writer.write(card.getAnswer() + "/");
+                writer.write(card.getNote() + "\n");
+
             }
             JOptionPane.showMessageDialog(this, "Zapisano fiszki.");
         } catch (Exception e) {
@@ -128,6 +154,7 @@ public class FlashCardBuilderPanel extends JPanel {
     private void clearFields() {
         question.setText("");
         answer.setText("");
+        note.setText("");
         question.requestFocus(); // ustawia fokus z powrotem na pytaniu
     }
 }

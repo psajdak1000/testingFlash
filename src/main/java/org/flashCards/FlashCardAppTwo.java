@@ -1,4 +1,4 @@
-package flashCards;
+package org.flashCards;
 
 import javax.swing.*;
 

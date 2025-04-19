@@ -1,12 +1,14 @@
-package flashCards;
+package org.flashCards;
 
 public class FlashCard {
     private String question;
     private String answer;
+    private String note;
 
-    public FlashCard(String question,String answer){
+    public FlashCard(String question,String answer,  String note) {
         this.question = question;
         this.answer = answer;
+        this.note = note;
     }
 
     public String getQuestion() {
@@ -23,5 +25,12 @@ public class FlashCard {
 
     public void setAnswer(String answer) {
         this.answer = answer;
+    }
+
+    public String getNote() {
+        return note;
+    }
+    public void setNote(String note) {
+        this.note = note;
     }
 }
