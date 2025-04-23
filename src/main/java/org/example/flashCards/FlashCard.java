@@ -1,4 +1,4 @@
-package org.flashCards;
+package org.example.flashCards;
 
 public class FlashCard {
     private String question;

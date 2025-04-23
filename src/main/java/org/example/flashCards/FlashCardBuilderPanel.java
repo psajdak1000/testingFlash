@@ -1,4 +1,4 @@
-package org.flashCards;
+package org.example.flashCards;
 
 // Importujemy potrzebne klasy z bibliotek Swing (GUI) i Java (IO, kolekcje)
 import javax.swing.*;

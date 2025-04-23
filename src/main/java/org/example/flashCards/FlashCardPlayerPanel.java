@@ -1,4 +1,4 @@
-package org.flashCards;
+package org.example.flashCards;
 
 import javax.swing.*;
 import java.awt.*;
@@ -67,11 +67,13 @@ public class FlashCardPlayerPanel extends JPanel {
         // tutaj przycisk odpowiedzi tu skonczylem
 
         showAnswerButton = new JButton("Pokaz odpowiedz");
+        showAnswerButton.setEnabled(false);
         showAnswerButton.addActionListener(e -> handleShowAnswer());
 
 
         // Przycisk podpowiedzi
         showHintButton = new JButton("Pokaz podpowiedz");
+        showHintButton.setEnabled(false); // 1) start — jeszcze nie wczytane fiszki
         showHintButton.addActionListener(e -> {
             if (currentCard != null  && !isFinished) {
                 noteDisplay.setText(currentCard.getNote());
@@ -167,8 +169,10 @@ public class FlashCardPlayerPanel extends JPanel {
             } else {
                 display.setText("To była ostatnia fiszka.");
                 showAnswerButton.setEnabled(false);
+                showHintButton.setEnabled(false);  // 3) wyłączamy też podpowiedź
                 ratingPanel.setVisible(false);
                 isFinished = true;
+                currentCard = null;                // czyścimy referencję dla bezpieczeństw
             }
         }
     }
@@ -177,6 +181,9 @@ public class FlashCardPlayerPanel extends JPanel {
         currentCard = cardIterator.next();
         display.setText(currentCard.getQuestion());
         showAnswerButton.setText("Pokaż odpowiedź");
+        // 2b) każda nowa fiszka przywraca aktywność przycisku
+        showHintButton.setEnabled(true);
+
         isShowAnswer = true;
         //to dodane
         noteDisplay.setText("");
@@ -201,6 +208,8 @@ public class FlashCardPlayerPanel extends JPanel {
             cardIterator = cardList.iterator();
             showNextCard();
             showAnswerButton.setEnabled(true);
+            showHintButton.setEnabled(true);  // 2) po wczytaniu – już można używać podpowiedzi
+            isFinished = false;
         }
     }
 
