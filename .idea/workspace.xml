@@ -5,21 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fa264360-ed61-4c7a-99d1-bb1bb1ed1018" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/model/FlashCard.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/model/FlashCardDeck.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/persistence/CardStore.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/persistence/FileCardStore.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/service/FlashCardService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/service/ProgressTracker.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/ui/FlashCardAppTwo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/ui/controller/BuilderController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/ui/controller/PlayerController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/ui/view/BuilderPanel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/ui/view/PlayerPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/flashCards/FlashCard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCard.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/flashCards/FlashCardAppTwo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardAppTwo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/flashCards/FlashCardBuilderPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardBuilderPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/flashCards/FlashCardPlayerPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardPlayerPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardPlayerPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardPlayerPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/flashCards/FlashCardPlayerPanel.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/flashCards/FlashCardPlayerPanel.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,26 +34,28 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.FlashCardAppTwo.executor": "Run",
-    "Application.org.ui.FlashCardAppTwo.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Lenovo/IdeaProjects/testing/testingFlash/src/main/java/org",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "onboarding.tips.debug.path": "C:/Users/Lenovo/IdeaProjects/testing/testingFlash/src/main/java/org/example/Main.java",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.FlashCardAppTwo.executor&quot;: &quot;Run&quot;,
+    &quot;Application.org.example.flashCards.FlashCardAppTwo.executor&quot;: &quot;Run&quot;,
+    &quot;Application.org.ui.FlashCardAppTwo.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Lenovo/IdeaProjects/testing/testingFlash/src/main/java/org&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;onboarding.tips.debug.path&quot;: &quot;C:/Users/Lenovo/IdeaProjects/testing/testingFlash/src/main/java/org/example/Main.java&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.log&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Lenovo\IdeaProjects\testing\testingFlash\src\main\java\org" />
@@ -74,13 +64,26 @@
       <recent name="org.ui" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.org.ui.FlashCardAppTwo">
+  <component name="RunManager" selected="Application.org.example.flashCards.FlashCardAppTwo">
     <configuration name="FlashCardAppTwo" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.flashCards.FlashCardAppTwo" />
       <module name="testingFlash" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="org.flashCards.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="org.example.flashCards.FlashCardAppTwo" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.example.flashCards.FlashCardAppTwo" />
+      <module name="testingFlash" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.example.flashCards.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -103,6 +106,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.org.example.flashCards.FlashCardAppTwo" />
         <item itemvalue="Application.org.ui.FlashCardAppTwo" />
         <item itemvalue="Application.FlashCardAppTwo" />
       </list>
@@ -125,12 +129,28 @@
       <option name="presentableId" value="Default" />
       <updated>1744806154565</updated>
       <workItem from="1744806156094" duration="18783000" />
-      <workItem from="1745402756416" duration="7779000" />
+      <workItem from="1745402756416" duration="10726000" />
+      <workItem from="1745542968067" duration="2825000" />
+      <workItem from="1745828961515" duration="600000" />
+      <workItem from="1745931312107" duration="367000" />
+      <workItem from="1746479768309" duration="2981000" />
+      <workItem from="1746540406756" duration="6884000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -12,11 +12,13 @@ public class FlashCardPlayerPanel extends JPanel {
     private JTextArea display;
     private JTextArea noteDisplay;
     private ArrayList<FlashCard> cardList;
-    private Iterator<FlashCard> cardIterator;
+    private ListIterator<FlashCard> cardListIterator;
     private FlashCard currentCard;
     private boolean isShowAnswer;
     private JButton showAnswerButton;
+    private JButton showPreviousButton;
     private JButton showHintButton;
+    private JButton showNextButton;
 
     private JPanel ratingPanel;
     private JButton rate1Button;
@@ -70,6 +72,17 @@ public class FlashCardPlayerPanel extends JPanel {
         showAnswerButton.setEnabled(false);
         showAnswerButton.addActionListener(e -> handleShowAnswer());
 
+        //przycisk wczesniej
+        showPreviousButton = new JButton("Pokaz wczesniejsza");
+        showPreviousButton.setEnabled(false);
+        showPreviousButton.addActionListener(e ->showPreviousCard());
+
+        //nastepny
+        showNextButton = new JButton("Pokaż następną");
+        showNextButton.setEnabled(false);
+        showNextButton.addActionListener(e -> showNextCard());
+
+
 
         // Przycisk podpowiedzi
         showHintButton = new JButton("Pokaz podpowiedz");
@@ -85,6 +98,8 @@ public class FlashCardPlayerPanel extends JPanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         buttonPanel.add(showHintButton);
         buttonPanel.add(showAnswerButton);
+        buttonPanel.add(showPreviousButton);
+        buttonPanel.add(showNextButton);
 
         // Panel oceniania
         ratingPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
@@ -119,6 +134,9 @@ public class FlashCardPlayerPanel extends JPanel {
 
 
         add(mainPanel, BorderLayout.CENTER);
+        revalidate();
+        repaint();
+
 
 
         // Menu z wczytywaniem fiszek
@@ -144,7 +162,7 @@ public class FlashCardPlayerPanel extends JPanel {
             ratings.put(currentCard, value);
             System.out.println("Oceniono fiszkę: " + currentCard.getQuestion() + " → " + value);
             // Możesz tu dodać przejście do następnej fiszki od razu, jeśli chcesz:
-            if (cardIterator.hasNext()) {
+            if (cardListIterator.hasNext()) {
                 showNextCard();
             } else {
                 display.setText("To była ostatnia fiszka.");
@@ -154,6 +172,44 @@ public class FlashCardPlayerPanel extends JPanel {
         }
     }
 
+    // 1. W klasie FlashCardPlayerPanel dodaj:
+    private void updateCardView(FlashCard card) {
+        currentCard = card;
+        display.setText(card.getQuestion());
+        // reset stanu odpowiedzi i podpowiedzi
+        showAnswerButton.setText("Pokaż odpowiedź");
+        isShowAnswer = true;
+        noteDisplay.setText("");
+        noteDisplay.setVisible(false);
+        ratingPanel.setVisible(false);
+    }
+
+    // 2. Dodaj pomocniczą metodę do włączania/wyłączania nawigacji:
+    private void updateNavButtons() {
+        showPreviousButton.setEnabled(cardListIterator.hasPrevious());
+        showNextButton.setEnabled(cardListIterator.hasNext());
+    }
+
+    // 3. Zmodyfikuj showNextCard() tak, by korzystała z tych dwóch metod:
+    //showNextCard showPreviousCard
+    private void showNextCard() {
+        if(!cardListIterator.hasNext()) {
+            return;
+        }
+        updateCardView(cardListIterator.next());
+        updateNavButtons();
+    }
+
+    // 4. A showPreviousCard() staje się bardzo prosta:
+    private void showPreviousCard() {
+         if(!cardListIterator.hasPrevious()) {
+             return;
+         }
+        updateCardView(cardListIterator.previous());
+        updateNavButtons();
+    }
+
+
     private void handleShowAnswer() {
         if (cardList == null || cardList.isEmpty()) return;
 
@@ -162,11 +218,15 @@ public class FlashCardPlayerPanel extends JPanel {
             noteDisplay.setVisible(false);
             ratingPanel.setVisible(true);
             showAnswerButton.setText("Następna fiszka");
-            isShowAnswer = false;
+            isShowAnswer = true;
         } else {
-            if (cardIterator.hasNext()) {
+            if (cardListIterator.hasNext()) {
                 showNextCard();
-            } else {
+            } else if (cardListIterator.hasPrevious()) {
+                showPreviousCard();
+
+            }
+         else {
                 display.setText("To była ostatnia fiszka.");
                 showAnswerButton.setEnabled(false);
                 showHintButton.setEnabled(false);  // 3) wyłączamy też podpowiedź
@@ -177,20 +237,7 @@ public class FlashCardPlayerPanel extends JPanel {
         }
     }
 
-    private void showNextCard() {
-        currentCard = cardIterator.next();
-        display.setText(currentCard.getQuestion());
-        showAnswerButton.setText("Pokaż odpowiedź");
-        // 2b) każda nowa fiszka przywraca aktywność przycisku
-        showHintButton.setEnabled(true);
-
-        isShowAnswer = true;
-        //to dodane
-        noteDisplay.setText("");
-        noteDisplay.setVisible(false);
-        ratingPanel.setVisible(false);
-
-    }
+//
 
     private void loadFile(File file) {
         cardList = new ArrayList<>();
@@ -205,10 +252,12 @@ public class FlashCardPlayerPanel extends JPanel {
         }
 
         if (!cardList.isEmpty()) {
-            cardIterator = cardList.iterator();
-            showNextCard();
+            cardListIterator =cardList.listIterator();
+            //od razu pierwsza karta:
+            updateCardView(cardListIterator.next());
             showAnswerButton.setEnabled(true);
-            showHintButton.setEnabled(true);  // 2) po wczytaniu – już można używać podpowiedzi
+            showHintButton.setEnabled(true);// 2) po wczytaniu – już można używać podpowiedzi
+            updateNavButtons();// wlaczam/ wylaczam prev i next
             isFinished = false;
         }
     }
