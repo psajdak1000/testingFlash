@@ -1,6 +1,8 @@
 package org.example.flashCards;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 
 public class FlashCardAppTwo {
 
