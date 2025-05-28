@@ -5,19 +5,25 @@ import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 public class FlashCardPlayerPanel extends JPanel {
 
+    // === STAŁE ===
+    private static final Font MAIN_FONT = new Font("Helvetica Neue", Font.BOLD, 22);
+    private static final Font STATS_FONT = new Font("Helvetica Neue", Font.PLAIN, 14);
+    private static final String CARD_SEPARATOR = "/";
+
+    // === KOMPONENTY GUI ===
     private JTextArea display;
     private JTextArea noteDisplay;
-    private ArrayList<FlashCard> cardList;
-    private ListIterator<FlashCard> cardListIterator;
-    private FlashCard currentCard;
     private JLabel positionLabel;
-
-    private boolean isShowAnswer;
-    private int currentIndex = 0;
+    private JLabel statsLabel;
 
     private JButton showAnswerButton;
     private JButton showPreviousButton;
@@ -31,110 +37,172 @@ public class FlashCardPlayerPanel extends JPanel {
     private JButton rate3Button;
     private JButton rate4Button;
 
+    // Panel filtrów
+    private JPanel filterPanel;
+    private JButton showAllButton;
+    private JButton showToReviewButton;
+    private JButton showMasteredButton;
+    private JButton showNewButton;
+
+    // === DANE ===
+    private ArrayList<FlashCard> allCards; // Wszystkie fiszki
+    private ArrayList<FlashCard> filteredCards; // Aktualnie wyświetlane fiszki
+    private int currentIndex = 0;
+    private FlashCard currentCard;
+    private FilterMode currentFilter = FilterMode.ALL;
+
+    // === STAN APLIKACJI ===
     private boolean isFinished = false;
+    private boolean isShowingAnswer = false;
 
+    // === ENUM DLA FILTRÓW ===
+    public enum FilterMode {
+        ALL("Wszystkie"),
+        TO_REVIEW("Do powtórki"),
+        MASTERED("Opanowane"),
+        NEW("Nowe");
 
-    private Map<FlashCard, Integer> ratings = new HashMap<>();
+        private final String displayName;
 
+        FilterMode(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
 
     public FlashCardPlayerPanel() {
+        initializeComponents();
+        setupLayout();
+        setupMenuBar();
+
+        // Początkowy stan - wszystkie przyciski wyłączone do czasu wczytania fiszek
+        setButtonsEnabled(false);
+    }
+
+    private void initializeComponents() {
         setLayout(new BorderLayout());
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-
-        Font mFont = new Font("Helvetica Neue", Font.BOLD, 22);
-
-        //pole z pytaniem/odpowiedzia
-        display = new JTextArea(10, 20);
-        display.setFont(mFont);
+        // Display area
+        display = new JTextArea(8, 20);
+        display.setFont(MAIN_FONT);
         display.setWrapStyleWord(true);
         display.setLineWrap(true);
         display.setEditable(false);
 
-        JScrollPane qScrollPane = new JScrollPane(display);
-        qScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        qScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        // pole z notatka ukryte na starcie
+        // Note display
         noteDisplay = new JTextArea(3, 20);
-        noteDisplay.setFont(mFont);
+        noteDisplay.setFont(MAIN_FONT);
         noteDisplay.setWrapStyleWord(true);
         noteDisplay.setLineWrap(true);
         noteDisplay.setEditable(false);
         noteDisplay.setVisible(false);
 
-        JScrollPane noteScrollPane = new JScrollPane(noteDisplay);
-        noteScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        noteScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        // Statistics label
+        statsLabel = new JLabel("Statystyki: Wczytaj fiszki aby zobaczyć dane");
+        statsLabel.setFont(STATS_FONT);
+        statsLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-
-        // tutaj przycisk odpowiedzi tu skonczylem
-
-        showAnswerButton = new JButton("Pokaz odpowiedz");
-        showAnswerButton.setEnabled(true);
+        // Navigation buttons
+        showAnswerButton = new JButton("Pokaż odpowiedź");
         showAnswerButton.addActionListener(e -> handleShowAnswer());
 
-        //przycisk wczesniej
-        showPreviousButton = new JButton("Pokaz wczesniejsza");
-        showPreviousButton.setEnabled(true);
+        showPreviousButton = new JButton("Poprzednia");
         showPreviousButton.addActionListener(e -> showPreviousCard());
 
-        //nastepny
-        showNextButton = new JButton("Pokaż następną");
-        showNextButton.setEnabled(true);
+        showNextButton = new JButton("Następna");
         showNextButton.addActionListener(e -> showNextCard());
 
-        //finishbutton
+        showHintButton = new JButton("Pokaż podpowiedź");
+        showHintButton.addActionListener(e -> showHint());
+
         finishButton = new JButton("Zakończ naukę");
-        finishButton.addActionListener(e -> {
-            endSession();
-        });
+        finishButton.addActionListener(e -> endSession());
 
+        // Rating buttons
+        setupRatingPanel();
 
-        // Przycisk podpowiedzi
-        showHintButton = new JButton("Pokaz podpowiedz");
-        showHintButton.setEnabled(true); // 1) start — jeszcze nie wczytane fiszki
-        showHintButton.addActionListener(e -> {
-            if (currentCard != null && !isFinished) {
-                noteDisplay.setText(currentCard.getNote());
-                noteDisplay.setVisible(true);
-            }
-        });
+        // Filter buttons
+        setupFilterPanel();
+    }
 
+    private void setupRatingPanel() {
+        ratingPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        ratingPanel.setBorder(BorderFactory.createTitledBorder("Jak Ci poszło?"));
 
-        //panel z przyciskami
+        rate1Button = new JButton("❌ Nie umiem");
+        rate2Button = new JButton("😐 Średnio");
+        rate3Button = new JButton("👍 Dobrze");
+        rate4Button = new JButton("💯 Umiem i jestem pewien");
 
+        rate1Button.addActionListener(e -> rateCard(1));
+        rate2Button.addActionListener(e -> rateCard(2));
+        rate3Button.addActionListener(e -> rateCard(3));
+        rate4Button.addActionListener(e -> rateCard(4));
+
+        ratingPanel.add(rate1Button);
+        ratingPanel.add(rate2Button);
+        ratingPanel.add(rate3Button);
+        ratingPanel.add(rate4Button);
+        ratingPanel.setVisible(false);
+    }
+
+    private void setupFilterPanel() {
+        filterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        filterPanel.setBorder(BorderFactory.createTitledBorder("Filtruj fiszki"));
+
+        showAllButton = new JButton("Wszystkie");
+        showToReviewButton = new JButton("Do powtórki");
+        showMasteredButton = new JButton("Opanowane");
+        showNewButton = new JButton("Nowe");
+
+        showAllButton.addActionListener(e -> applyFilter(FilterMode.ALL));
+        showToReviewButton.addActionListener(e -> applyFilter(FilterMode.TO_REVIEW));
+        showMasteredButton.addActionListener(e -> applyFilter(FilterMode.MASTERED));
+        showNewButton.addActionListener(e -> applyFilter(FilterMode.NEW));
+
+        filterPanel.add(showAllButton);
+        filterPanel.add(showToReviewButton);
+        filterPanel.add(showMasteredButton);
+        filterPanel.add(showNewButton);
+
+        updateFilterButtonStates();
+    }
+
+    private void setupLayout() {
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+
+        // Statistics
+        mainPanel.add(statsLabel);
+        mainPanel.add(Box.createVerticalStrut(10));
+
+        // Filter panel
+        mainPanel.add(filterPanel);
+        mainPanel.add(Box.createVerticalStrut(10));
+
+        // Question/Answer display
+        JScrollPane qScrollPane = new JScrollPane(display);
+        qScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        qScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        // Note display
+        JScrollPane noteScrollPane = new JScrollPane(noteDisplay);
+        noteScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        noteScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        // Button panel
         JPanel buttonPanel = new JPanel(new GridLayout(1, 5, 10, 0));
         buttonPanel.add(showHintButton);
         buttonPanel.add(showAnswerButton);
         buttonPanel.add(showPreviousButton);
         buttonPanel.add(showNextButton);
         buttonPanel.add(finishButton);
-        buttonPanel.revalidate();
-        buttonPanel.repaint();
 
-        // Panel oceniania
-        ratingPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        rate1Button = new JButton("❌ Nie umiem");
-        rate2Button = new JButton("😐 Średnio");
-        rate3Button = new JButton("👍 Dobrze");
-        rate4Button = new JButton("💯 Umiem");
-        ratingPanel.add(rate1Button);
-        ratingPanel.add(rate2Button);
-        ratingPanel.add(rate3Button);
-        ratingPanel.add(rate4Button);
-        ratingPanel.setVisible(false);
-
-        rate1Button.addActionListener(e -> saveRating(1));
-        rate2Button.addActionListener(e -> saveRating(2));
-        rate3Button.addActionListener(e -> saveRating(3));
-        rate4Button.addActionListener(e -> saveRating(4));
-
-
-        // === Dodawanie komponentów do mainPanel w dobrej kolejności ===
-        // Dodawanie do mainPanel
+        // Add components to main panel
         mainPanel.add(qScrollPane);
         mainPanel.add(Box.createVerticalStrut(10));
         mainPanel.add(buttonPanel);
@@ -142,188 +210,395 @@ public class FlashCardPlayerPanel extends JPanel {
         mainPanel.add(new JLabel("Podpowiedź:"));
         mainPanel.add(noteScrollPane);
         mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(new JLabel("Jak Ci poszło?"));
         mainPanel.add(ratingPanel);
 
-
         add(mainPanel, BorderLayout.CENTER);
-        revalidate();
-        repaint();
+    }
 
-
-        // Menu z wczytywaniem fiszek
+    private void setupMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("Plik");
-        JMenuItem loadItem = new JMenuItem("Wczytaj zestaw fiszek");
 
-        loadItem.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            int option = fileChooser.showOpenDialog(this);
-            if (option == JFileChooser.APPROVE_OPTION) {
-                loadFile(fileChooser.getSelectedFile());
-            }
-        });
+        // Load flashcards
+        JMenuItem loadItem = new JMenuItem("Wczytaj fiszki");
+        loadItem.addActionListener(e -> loadFlashCards());
+
+        // Save/Load progress
+        JMenuItem saveProgressItem = new JMenuItem("Zapisz postęp");
+        saveProgressItem.addActionListener(e -> saveProgress());
+
+        JMenuItem loadProgressItem = new JMenuItem("Wczytaj postęp");
+        loadProgressItem.addActionListener(e -> loadProgress());
 
         fileMenu.add(loadItem);
+        fileMenu.addSeparator();
+        fileMenu.add(saveProgressItem);
+        fileMenu.add(loadProgressItem);
+
         menuBar.add(fileMenu);
         menuBar.add(Box.createHorizontalGlue());
+
         positionLabel = new JLabel("0/0");
         menuBar.add(positionLabel);
+
         add(menuBar, BorderLayout.NORTH);
     }
 
-    private void saveRating(int value) {
-        if (currentCard == null) return;
-        ratings.put(currentCard, value);
-        System.out.println("Oceniono: " + currentCard.getQuestion() + " → " + value);
+    // === METODY FILTROWANIA ===
 
-        if (cardListIterator.hasNext()) {
-            showNextCard();
+    private void applyFilter(FilterMode mode) {
+        if (allCards == null || allCards.isEmpty()) {
+            return;
+        }
+
+        currentFilter = mode;
+        filteredCards = new ArrayList<>();
+
+        switch (mode) {
+            case ALL:
+                filteredCards.addAll(allCards);
+                break;
+            case TO_REVIEW:
+                filteredCards.addAll(allCards.stream()
+                        .filter(FlashCard::isToReview)
+                        .collect(Collectors.toList()));
+                break;
+            case MASTERED:
+                filteredCards.addAll(allCards.stream()
+                        .filter(FlashCard::isMastered)
+                        .collect(Collectors.toList()));
+                break;
+            case NEW:
+                filteredCards.addAll(allCards.stream()
+                        .filter(FlashCard::isNew)
+                        .collect(Collectors.toList()));
+                break;
+        }
+
+        currentIndex = 0;
+        updateFilterButtonStates();
+        updateCardView();
+        updateStatistics();
+
+        if (filteredCards.isEmpty()) {
+            display.setText("Brak fiszek w tej kategorii: " + mode.getDisplayName());
+            setButtonsEnabled(false);
+        } else {
+            setButtonsEnabled(true);
         }
     }
 
-    // 1. W klasie FlashCardPlayerPanel :
-    private void updateCardView(FlashCard card) {
-        currentCard = card;
-        display.setText(card.getQuestion());
-        // reset stanu odpowiedzi i podpowiedzi
-//        showAnswerButton.setText("Pokaż odpowiedź");
-//        isShowAnswer = true;
+    private void updateFilterButtonStates() {
+        showAllButton.setEnabled(currentFilter != FilterMode.ALL);
+        showToReviewButton.setEnabled(currentFilter != FilterMode.TO_REVIEW);
+        showMasteredButton.setEnabled(currentFilter != FilterMode.MASTERED);
+        showNewButton.setEnabled(currentFilter != FilterMode.NEW);
+    }
+
+    // === STATYSTYKI ===
+
+    private void updateStatistics() {
+        if (allCards == null || allCards.isEmpty()) {
+            statsLabel.setText("Statystyki: Wczytaj fiszki aby zobaczyć dane");
+            return;
+        }
+
+        long newCount = allCards.stream().filter(FlashCard::isNew).count();
+        long toReviewCount = allCards.stream().filter(FlashCard::isToReview).count();
+        long masteredCount = allCards.stream().filter(FlashCard::isMastered).count();
+        int totalCount = allCards.size();
+
+        String stats = String.format(
+                "📊 Razem: %d | 🆕 Nowe: %d | 🔄 Do powtórki: %d | ✅ Opanowane: %d | Filtr: %s (%d)",
+                totalCount, newCount, toReviewCount, masteredCount,
+                currentFilter.getDisplayName(), filteredCards.size()
+        );
+
+        statsLabel.setText(stats);
+    }
+
+    // === METODY POMOCNICZE ===
+
+    private void setButtonsEnabled(boolean enabled) {
+        showAnswerButton.setEnabled(enabled);
+        showPreviousButton.setEnabled(enabled);
+        showNextButton.setEnabled(enabled);
+        showHintButton.setEnabled(enabled);
+        finishButton.setEnabled(enabled);
+    }
+
+    private void updateCardView() {
+        if (filteredCards == null || filteredCards.isEmpty() || currentIndex < 0 || currentIndex >= filteredCards.size()) {
+            return;
+        }
+
+        currentCard = filteredCards.get(currentIndex);
+        display.setText(currentCard.getQuestion());
+
+        // Reset stanu
+        isShowingAnswer = false;
+        showAnswerButton.setText("Pokaż odpowiedź");
         noteDisplay.setText("");
         noteDisplay.setVisible(false);
         ratingPanel.setVisible(false);
-        updateNavButtons();                       // odśwież Prev/Next
-        updatePositionLabel();                    // uaktualnij numerację
+
+        updateNavigationButtons();
+        updatePositionLabel();
+    }
+
+    private void updateNavigationButtons() {
+        if (filteredCards == null || isFinished) {
+            showPreviousButton.setEnabled(false);
+            showNextButton.setEnabled(false);
+            return;
+        }
+
+        showPreviousButton.setEnabled(currentIndex > 0);
+        showNextButton.setEnabled(currentIndex < filteredCards.size() - 1);
     }
 
     private void updatePositionLabel() {
-        if (cardList != null) {
-//  wiersz currentCard w liście  +1
-            int humanIndex = cardList.indexOf(currentCard) + 1;
-            int total = cardList.size();
-            positionLabel.setText(humanIndex + "/" + total);
+        if (filteredCards != null && !filteredCards.isEmpty()) {
+            positionLabel.setText((currentIndex + 1) + "/" + filteredCards.size());
+        } else {
+            positionLabel.setText("0/0");
         }
     }
 
-    // 2.  pomocnicza metodę do włączania/wyłączania nawigacji:
-    private void updateNavButtons() {
-//        // Jeśli sesja zakończona (currentCard == null), wszystkie nawigacyjne wyłączone
-//        if (currentCard == null) {
-//            showPreviousButton.setEnabled(false);
-//            showNextButton.setEnabled(false);
-//        } else {
-//            showPreviousButton.setEnabled(cardListIterator.hasPrevious());
-//            showNextButton.setEnabled(cardListIterator.hasNext());
-//        }
-        showPreviousButton.setEnabled(currentIndex > 0);
-        showNextButton.setEnabled(currentIndex < cardList.size() - 1);
-    }
+    // === LOGIKA NAWIGACJI ===
 
     private void showNextCard() {
-//        if (!cardListIterator.hasNext()) return;
-//        currentIndex++;
-//        updateCardView(cardListIterator.next());
-//        updateNavButtons();
-        if (currentIndex < cardList.size() - 1) {
-            currentIndex++;
-            updateCardView(cardList.get(currentIndex));
+        if (filteredCards == null || isFinished || currentIndex >= filteredCards.size() - 1) {
+            return;
         }
+
+        currentIndex++;
+        updateCardView();
     }
 
     private void showPreviousCard() {
-//        if (!cardListIterator.hasPrevious()) return;
-//        currentIndex--;
-//        updateCardView(cardListIterator.previous());
-//        updateNavButtons();
+        if (filteredCards == null || isFinished || currentIndex <= 0) {
+            return;
+        }
 
-        if (currentIndex > 0) {
-            currentIndex--;
-            updateCardView(cardList.get(currentIndex));
+        currentIndex--;
+        updateCardView();
+    }
+
+    private void handleShowAnswer() {
+        if (currentCard == null || isFinished) return;
+
+        if (!isShowingAnswer) {
+            // Pokaż odpowiedź
+            display.setText(currentCard.getAnswer());
+            showAnswerButton.setText("Pokaż pytanie");
+            ratingPanel.setVisible(true);
+            isShowingAnswer = true;
+        } else {
+            // Wróć do pytania
+            display.setText(currentCard.getQuestion());
+            showAnswerButton.setText("Pokaż odpowiedź");
+            ratingPanel.setVisible(false);
+            isShowingAnswer = false;
+        }
+
+        noteDisplay.setVisible(false);
+    }
+
+    private void showHint() {
+        if (currentCard != null && !isFinished) {
+            noteDisplay.setText(currentCard.getNote());
+            noteDisplay.setVisible(true);
         }
     }
 
-
-    private void handleShowAnswer() {
-//        if (cardList == null || cardList.isEmpty()) return;
-//
-//        if (isShowAnswer) {
-//            display.setText(currentCard.getAnswer());
-//            noteDisplay.setVisible(false);
-//            ratingPanel.setVisible(true);
-//            showAnswerButton.setText("Następna fiszka");
-//            isShowAnswer = true;
-//        } else {
-//            if (cardListIterator.hasNext()) {
-//                showNextCard();
-//            } else if (cardListIterator.hasPrevious()) {
-//                showPreviousCard();
-//
-//            }
-//            else {
-//                display.setText("To była ostatnia fiszka.");
-//                showAnswerButton.setEnabled(false);
-//                showHintButton.setEnabled(false);  // 3) wyłączamy też podpowiedź
-//                ratingPanel.setVisible(false);
-//                isFinished = true;
-//                currentCard = null;                // czyścimy referencję dla bezpieczeństw
-//            }
-//        }
-
+    private void rateCard(int rating) {
         if (currentCard == null) return;
-        display.setText(currentCard.getAnswer());
-        noteDisplay.setVisible(false);
-        ratingPanel.setVisible(true);
+
+        currentCard.setRating(rating);
+        System.out.println("Oceniono: " + currentCard.getQuestion() + " → " + rating +
+                " (Status: " + currentCard.getStatus() + ")");
+
+        updateStatistics();
+
+        // Jeśli aktualny filtr to "Do powtórki" i fiszka została opanowana,
+        // usuń ją z filteredCards
+        if (currentFilter == FilterMode.TO_REVIEW && currentCard.isMastered()) {
+            filteredCards.remove(currentIndex);
+            if (currentIndex >= filteredCards.size()) {
+                currentIndex = Math.max(0, filteredCards.size() - 1);
+            }
+            if (filteredCards.isEmpty()) {
+                display.setText("Gratulacje! Opanowałeś wszystkie fiszki do powtórki! 🎉");
+                setButtonsEnabled(false);
+                ratingPanel.setVisible(false);
+                return;
+            }
+            updateCardView();
+        } else {
+            // Automatyczne przejście do następnej karty (jeśli istnieje)
+            if (currentIndex < filteredCards.size() - 1) {
+                showNextCard();
+            } else {
+                // Ostatnia karta
+                ratingPanel.setVisible(false);
+                display.setText("To była ostatnia fiszka w tej kategorii! Możesz zakończyć naukę.");
+            }
+        }
     }
 
     private void endSession() {
-        display.setText("DZIĘKI ZA NAUKĘ");
-        // wyłącz wszystkie przyciski
-        showAnswerButton.setEnabled(false);
-        showHintButton.setEnabled(false);
-        showPreviousButton.setEnabled(false);
-        showNextButton.setEnabled(false);
-        finishButton.setEnabled(false);
-        // ukryj/pokaż co trzeba
+        display.setText("DZIĘKI ZA NAUKĘ! 📚✨");
+        setButtonsEnabled(false);
         ratingPanel.setVisible(false);
         noteDisplay.setVisible(false);
+        isFinished = true;
         currentCard = null;
     }
 
-//
+    // === WCZYTYWANIE I ZAPISYWANIE ===
+
+    private void loadFlashCards() {
+        JFileChooser fileChooser = new JFileChooser();
+        int option = fileChooser.showOpenDialog(this);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            loadFile(fileChooser.getSelectedFile());
+        }
+    }
+
+    private void saveProgress() {
+        if (allCards == null || allCards.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Brak fiszek do zapisania!", "Błąd", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JFileChooser fileChooser = new JFileChooser();
+        int option = fileChooser.showSaveDialog(this);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            saveProgressToJson(fileChooser.getSelectedFile());
+        }
+    }
+
+    private void loadProgress() {
+        JFileChooser fileChooser = new JFileChooser();
+        int option = fileChooser.showOpenDialog(this);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            loadProgressFromJson(fileChooser.getSelectedFile());
+        }
+    }
 
     private void loadFile(File file) {
-        cardList = new ArrayList<>();
+        allCards = new ArrayList<>();
+
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                makeCard(line);
+                if (!line.trim().isEmpty()) {
+                    makeCard(line);
+                }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Błąd podczas wczytywania pliku", "Błąd", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Błąd podczas wczytywania pliku: " + e.getMessage(),
+                    "Błąd", JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
-        if (!cardList.isEmpty()) {
-            cardListIterator = cardList.listIterator();
-            currentIndex = 0;
-            //od razu pierwsza karta:
-            updateCardView(cardList.get(currentIndex));
-            showAnswerButton.setEnabled(true);
-            showHintButton.setEnabled(true);
-            finishButton.setEnabled(true);// 2) po wczytaniu – już można używać podpowiedzi
-            updateNavButtons();// wlaczam/ wylaczam prev i next
+        if (!allCards.isEmpty()) {
+            applyFilter(FilterMode.ALL);
             isFinished = false;
-            updatePositionLabel();
+            JOptionPane.showMessageDialog(this, "Wczytano " + allCards.size() + " fiszek.");
+        } else {
+            JOptionPane.showMessageDialog(this, "Nie znaleziono fiszek w pliku!", "Ostrzeżenie", JOptionPane.WARNING_MESSAGE);
         }
     }
 
     private void makeCard(String line) {
-        StringTokenizer tokenizer = new StringTokenizer(line, "/");
+        StringTokenizer tokenizer = new StringTokenizer(line, CARD_SEPARATOR);
         if (tokenizer.hasMoreTokens()) {
             String question = tokenizer.nextToken().trim();
             String answer = tokenizer.hasMoreTokens() ? tokenizer.nextToken().trim() : "";
             String note = tokenizer.hasMoreTokens() ? tokenizer.nextToken().trim() : "";
-            cardList.add(new FlashCard(question, answer, note));
+
+            if (!question.isEmpty()) {
+                allCards.add(new FlashCard(question, answer, note));
+            }
+        }
+    }
+
+    // === METODY JSON ===
+
+    public void saveProgressToJson(File file) {
+        if (allCards == null || allCards.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Brak danych do zapisania!", "Błąd", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (FlashCard card : allCards) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("question", card.getQuestion());
+            entry.put("answer", card.getAnswer());
+            entry.put("note", card.getNote());
+            entry.put("rating", card.getRating());
+            entry.put("status", card.getStatus().name());
+            data.add(entry);
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writerWithDefaultPrettyPrinter().writeValue(file, data);
+            JOptionPane.showMessageDialog(this, "Zapisano postęp do pliku JSON.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Błąd zapisu JSON: " + e.getMessage(),
+                    "Błąd", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void loadProgressFromJson(File file) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Map<String, Object>> data = mapper.readValue(file, new TypeReference<List<Map<String, Object>>>() {});
+
+            allCards = new ArrayList<>();
+
+            for (Map<String, Object> entry : data) {
+                String question = (String) entry.get("question");
+                String answer = (String) entry.get("answer");
+                String note = (String) entry.getOrDefault("note", "");
+
+                Integer ratingObj = (Integer) entry.get("rating");
+                int rating = (ratingObj != null) ? ratingObj : 0;
+
+                String statusStr = (String) entry.get("status");
+                CardStatus status = CardStatus.NEW;
+                if (statusStr != null) {
+                    try {
+                        status = CardStatus.valueOf(statusStr);
+                    } catch (IllegalArgumentException e) {
+                        // Zostaw domyślny status NEW
+                    }
+                }
+
+                if (question != null && !question.isEmpty()) {
+                    FlashCard card = new FlashCard(question, answer, note, status, rating);
+                    allCards.add(card);
+                }
+            }
+
+            if (!allCards.isEmpty()) {
+                applyFilter(FilterMode.ALL);
+                isFinished = false;
+                JOptionPane.showMessageDialog(this, "Wczytano " + allCards.size() + " fiszek z postępem.");
+            } else {
+                JOptionPane.showMessageDialog(this, "Nie znaleziono danych w pliku JSON!", "Ostrzeżenie", JOptionPane.WARNING_MESSAGE);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Błąd wczytywania JSON: " + e.getMessage(),
+                    "Błąd", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

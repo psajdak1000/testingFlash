@@ -1,6 +1,5 @@
 package org.example.flashCards;
 
-// Importujemy potrzebne klasy z bibliotek Swing (GUI) i Java (IO, kolekcje)
 import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedWriter;
@@ -24,8 +23,8 @@ public class FlashCardBuilderPanel extends JPanel {
     // Lista przechowująca utworzone fiszki
     private ArrayList<FlashCard> flashCardList;
 
-    /**
-     * Konstruktor panelu. Buduje UI i logikę dodawania oraz zapisywania fiszek.
+    /*
+     Konstruktor panelu. Buduje UI i logikę dodawania oraz zapisywania fiszek.
      */
     public FlashCardBuilderPanel() {
         // Inicjalizujemy pustą listę fiszek

@@ -1,4 +1,6 @@
-package org.example.flashCards;
+package org.model;
+
+import org.example.flashCards.FlashCard;
 
 import javax.swing.*;
 import java.awt.*;
@@ -7,13 +9,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.*;
 
-public class FlashCardPlayerPanel extends JPanel {
+public class FlashCardPlayerPanelCoppy extends JPanel {
 
     private JTextArea display;
     private JTextArea noteDisplay;
-    private ArrayList<FlashCard> cardList;
-    private ListIterator<FlashCard> cardListIterator;
-    private FlashCard currentCard;
+    private ArrayList<org.example.flashCards.FlashCard> cardList;
+    private ListIterator<org.example.flashCards.FlashCard> cardListIterator;
+    private org.example.flashCards.FlashCard currentCard;
 
     private boolean isShowAnswer;
 
@@ -32,10 +34,10 @@ public class FlashCardPlayerPanel extends JPanel {
 
 
 
-    private Map<FlashCard, Integer> ratings = new HashMap<>();
+    private Map<org.example.flashCards.FlashCard, Integer> ratings = new HashMap<>();
 
 
-    public FlashCardPlayerPanel() {
+    public FlashCardPlayerPanelCoppy() {
         setLayout(new BorderLayout());
 
         JPanel mainPanel = new JPanel();
@@ -175,7 +177,7 @@ public class FlashCardPlayerPanel extends JPanel {
     }
 
     // 1. W klasie FlashCardPlayerPanel dodaj:
-    private void updateCardView(FlashCard card) {
+    private void updateCardView(org.example.flashCards.FlashCard card) {
         currentCard = card;
         display.setText(card.getQuestion());
         // reset stanu odpowiedzi i podpowiedzi

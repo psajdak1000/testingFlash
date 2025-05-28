@@ -1,7 +1,5 @@
 package org.ui;
 
-import org.example.flashCards.FlashCardBuilderPanel;
-import org.example.flashCards.FlashCardPlayerPanel;
 import org.ui.view.BuilderPanel;
 import org.ui.view.PlayerPanel;
 

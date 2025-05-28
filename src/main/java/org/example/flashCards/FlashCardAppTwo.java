@@ -1,12 +1,21 @@
 package org.example.flashCards;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 public class FlashCardAppTwo {
 
     public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (Exception e) {
+            System.err.println("Nie udało się załadować FlatLaf Dark.");
+        }
+
         SwingUtilities.invokeLater(() -> new FlashCardAppTwo().createAndShowGUI());
     }
 
