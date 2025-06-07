@@ -5,20 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fa264360-ed61-4c7a-99d1-bb1bb1ed1018" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/flashCards/CardStatus.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCard.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardAppTwo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardAppTwo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardBuilderPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardBuilderPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardPlayerPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardPlayerPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardPlayerPanelT.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/flashCards/FlashCardPlayerPanelT.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/model/FlashCardPlayerPanelCoppy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/model/FlashCardPlayerPanelCoppy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/ui/FlashCardAppTwo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/ui/FlashCardAppTwo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/flashCards/FlashCard.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/flashCards/FlashCard.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/flashCards/FlashCardAppTwo.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/flashCards/FlashCardAppTwo.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/flashCards/FlashCardPlayerPanel.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/flashCards/FlashCardPlayerPanel.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/ui/FlashCardAppTwo.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/ui/FlashCardAppTwo.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -151,7 +138,8 @@
       <workItem from="1746540406756" duration="10247000" />
       <workItem from="1746870121004" duration="795000" />
       <workItem from="1747135479173" duration="26743000" />
-      <workItem from="1748433184076" duration="8759000" />
+      <workItem from="1748433184076" duration="11730000" />
+      <workItem from="1749166387662" duration="1230000" />
     </task>
     <servers />
   </component>
